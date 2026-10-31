@@ -1,0 +1,21 @@
+# dsh-token-split bundle layer: one insert over the profile root.
+#
+# The row deliberately ships WITHOUT `config`: every field falls back to the
+# schema default in lib/index.js (user = OS account name, providers =
+# ['opencode-go'], monthlyFee = 10 USD, cycleStartDay = 1, ...). To personalise
+# it, add an override row to the profile's own `cordis.patch.yml` (or to a
+# `--patch` overlay) that targets this id — a partial object is enough, because
+# a patch replaces the whole config object and the schema fills the fields you
+# leave out:
+#
+#   - id: token-split
+#     config:
+#       user: jerry
+#       monthlyFee: 10
+#       cycleStartDay: 15
+#       providers: [opencode-go]
+#
+# See README.zh.md for every field.
+- insert:
+    - id: token-split
+      name: dsh-token-split

@@ -1,0 +1,6 @@
+node_modules/
+test/.tmp/
+test/.tmp-*/
+test/.home-*/
+test/.ws-*/
+*.log
