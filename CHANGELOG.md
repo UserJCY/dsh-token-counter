@@ -2,6 +2,25 @@
 
 All notable changes to `dsh-token-split`. Dates are local build dates.
 
+## 0.4.0 — 2026-11-01
+
+The dialog is now a **range** view, not a calendar-month browser.
+
+- **Time dimension picker**: `今天 / 近 7 天 / 近 30 天 / 本自然月 / 全部`, default
+  `近 30 天`. It drives every block at once, and every rolling window **ends
+  today** — `近 30 天` is `10-03 … 11-01`, never "the month you happen to be in".
+- **New `GET /token-split/timeline?range=`** payload: one point list per measure
+  (`{key, label, cost, calls, tokens}`) for the total and for every model in the
+  range. `今天` returns 24 hourly points, the rest one point per day. `全部`
+  starts at the first record instead of 1970.
+- The per-block `‹ date ›` stepper and the `日 | 月 | 会话` switch are gone: with
+  a rolling range they contradicted each other (the dialog opened on the month
+  the panel window started in, so `近 30 天` showed October with everything on
+  the 31st). The month calendar view is still served by the route for callers
+  that ask for it without `range`.
+- Blocks now render straight from the range payload, so the whole dialog is one
+  request instead of one per block.
+
 ## 0.3.3 — 2026-11-01
 
 The detailed-usage dialog now follows the console's layout.

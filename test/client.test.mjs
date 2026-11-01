@@ -201,6 +201,39 @@ function baseOf(payload) {
   return { state: { status: 'ready', data: payload, error: null }, month: payload.month.key, date: payload.date }
 }
 
+/** A range payload: 30 daily points with one busy day. */
+function rangeData() {
+  const points = Array.from({ length: 30 }, (_, index) => ({
+    key: `2026-11-${pad2(index + 1)}`,
+    label: `11-${pad2(index + 1)}`,
+    cost: index === 29 ? 0.467 : 0,
+    calls: index === 29 ? 374 : 0,
+    tokens: index === 29 ? 26_484_419 : 0,
+  }))
+  return {
+    ok: true,
+    range: { key: 'last30', label: '近 30 天', start: 0, end: 1, hourly: false },
+    total: { cost: 0.467, calls: 374, tokens: 26_484_419, sessions: 28, share: 0.0059, limitKnown: true, points },
+    models: [
+      {
+        key: 'opencode-go/deepseek-v4.1-flash',
+        model: 'deepseek-v4.1-flash',
+        label: 'DeepSeek V4.1 Flash',
+        cost: 0.446,
+        calls: 372,
+        tokens: 26_347_053,
+        limit: 100,
+        share: 0.0045,
+        priced: true,
+        free: false,
+        points,
+      },
+    ],
+    unpriced: { calls: 0, tokens: 0 },
+    note: '本机口径 · 仅 opencode-go',
+  }
+}
+
 /** A summary hook state for the dialog. */
 function summaryState() {
   return { status: 'ready', data: summaryData(), error: null }
@@ -424,6 +457,7 @@ test('the dialog centres itself with the SPEC §5.3 geometry and no month in its
   const { exports } = materialize()
   const payload = timelineData()
   await seed(exports, '2026-11', '2026-11-01', payload)
+  exports.seedRange('last30', rangeData())
   const html = render(
     React.createElement(exports.UsageModal, {
       open: true,
@@ -446,11 +480,7 @@ test('the dialog centres itself with the SPEC §5.3 geometry and no month in its
   // Per-model block: `$0.446 / 0.45%` plus its own meta line.
   assert.match(html, /DeepSeek V4\.1 Flash/)
   assert.match(html, /\$0\.446 \/ 0\.45%/)
-  assert.match(html, /26,347,053 tokens · 372 次调用 · 28 个会话/)
-  // Each block owns a `日 | 月 | 会话` switch, defaulting to 日.
-  assert.equal(occurrences(html, /aria-pressed="true">日</g), 2)
-  assert.match(html, /dts-date-nav/)
-  assert.match(html, /2026-11-01/)
+  assert.match(html, /26,347,053 tokens · 372 次调用/)
   // Console-style header: three KPI cards, a model picker and an export button.
   assert.match(html, /dts-kpi-row/)
   assert.match(html, /消费金额/)
@@ -458,6 +488,10 @@ test('the dialog centres itself with the SPEC §5.3 geometry and no month in its
   assert.match(html, />Tokens</)
   assert.match(html, /全部模型/)
   assert.match(html, /dts-export[^>]*>导出</)
+  // The time dimension drives every block; there is no per-block stepper.
+  assert.match(html, /aria-label="时间维度"/)
+  assert.match(html, /近 30 天/)
+  assert.doesNotMatch(html, /dts-date-nav/)
   // The model blocks draw the requests/tokens pair, the total a cost card.
   assert.equal(occurrences(html, /dts-chart-title">API 请求次数</g), 1)
   assert.equal(occurrences(html, /dts-chart-title">Tokens</g), 1)
@@ -1394,9 +1428,10 @@ test('splitModels degrades gracefully and sorts both groups', () => {
   )
 })
 
-test('the dialog hides unused blocks behind a collapsed header', () => {
+test('the dialog renders only the models the range actually used', () => {
   const { exports } = materialize()
   const payload = { ...timelineData(), knownModels: knownModels() }
+  exports.seedRange('last30', rangeData())
   const html = render(
     React.createElement(exports.UsageModal, {
       open: true,
@@ -1406,15 +1441,14 @@ test('the dialog hides unused blocks behind a collapsed header', () => {
       onClose: () => {},
     }),
   )
-  assert.match(html, /本月未使用（2）/)
-  assert.match(html, /dts-unused-head/)
-  // Collapsed by default: neither unused model renders a block.
-  assert.doesNotMatch(html, /Claude Haiku 5\.5/)
-  assert.doesNotMatch(html, /Qwen3 Coder/)
-  assert.doesNotMatch(html, /上次使用/)
-  // The used model is still there, before the group header.
+  // The rolling range only carries models that ran in it, so the unused group
+  // has nothing to hide any more.
+  assert.doesNotMatch(html, /本月未使用/)
+  assert.doesNotMatch(html, /dts-unused-head/)
   assert.match(html, /DeepSeek V4\.1 Flash/)
-  assert.ok(html.indexOf('DeepSeek V4.1 Flash') < html.indexOf('本月未使用（2）'))
+  // The model picker lists the same set.
+  assert.match(html, /全部模型/)
+  assert.match(html, /aria-label="模型筛选"/)
 })
 
 test('expanding lists the unused blocks after the used ones, sorted by last cost', async () => {
