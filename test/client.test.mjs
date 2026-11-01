@@ -496,6 +496,9 @@ test('the dialog centres itself with the SPEC §5.3 geometry and no month in its
   assert.equal(occurrences(html, /dts-chart-title">API 请求次数</g), 1)
   assert.equal(occurrences(html, /dts-chart-title">Tokens</g), 1)
   assert.equal(occurrences(html, /dts-chart-title">消费金额</g), 1)
+  // Token axes read in compact units (`30M`), never `30,000,000`.
+  assert.match(html, />\d+(\.\d)?M</)
+  assert.doesNotMatch(html, /dts-axis-y[^>]*>\d{1,3},\d{3},\d{3}</)
 })
 
 test('two blocks can show different months at the same time', async () => {

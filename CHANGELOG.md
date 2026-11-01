@@ -2,6 +2,13 @@
 
 All notable changes to `dsh-token-split`. Dates are local build dates.
 
+## 0.4.1 — 2026-11-01
+
+- **Token axes use compact units.** The `Tokens` chart reads `200M` / `30M` / `1.4B`
+  instead of `200,000,000`, so the y-axis no longer eats a third of the card.
+  The tooltip follows the same format. Request counts and the KPI cards keep
+  their full grouped numbers.
+
 ## 0.4.0 — 2026-11-01
 
 The dialog is now a **range** view, not a calendar-month browser.
