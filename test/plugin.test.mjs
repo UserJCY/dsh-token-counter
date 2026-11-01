@@ -181,14 +181,16 @@ test('the browser route serves the current calendar month by default', async () 
 
   ctx.emit('session/event', sessionStub({ id: 's1' }), messageEvent({ usage: usage({ input: 1_000_000, output: 1_000_000 }) }))
 
-  // No query means the calendar month, not a rolling window.
+  // No query means the rolling 30 days, not the calendar month.
   const defaulted = fakeResponse()
   route.handler({ method: 'GET', url: SUMMARY_ROUTE, socket: { remoteAddress: '127.0.0.1' } }, defaulted)
   const defaultBody = JSON.parse(defaulted.captured.body)
-  assert.equal(defaultBody.window.period, 'month')
-  assert.equal(defaultBody.window.start, new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime())
+  assert.equal(defaultBody.window.period, 'last30')
   assert.equal(defaultBody.window.label.includes(' ~ '), true)
-  assert.equal(defaultBody.note, '本机口径 · 仅 opencode-go · 本自然月')
+  assert.equal(defaultBody.note, '本机口径 · 仅 opencode-go · 近 30 天')
+  // The allowance line stays anchored to the calendar month and the last week.
+  assert.equal(defaultBody.allowances.month.cap, 1)
+  assert.equal(typeof defaultBody.last7.cost, 'number')
 
   const res = fakeResponse()
   route.handler({ method: 'GET', url: `${SUMMARY_ROUTE}?period=all`, socket: { remoteAddress: '127.0.0.1' } }, res)
@@ -329,13 +331,15 @@ test('the summary counts models the ledger knows but this month never used', () 
   apply(ctx, resolveConfig({ user: 'alice', backfill: false }))
 
   const now = new Date()
-  const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15, 12).getTime()
-  // A: used this month. B: only used last month, so it is outside the window.
+  // Far enough back that it is outside the rolling 30-day default as well as
+  // the calendar month, whatever day the suite runs on.
+  const longAgo = now.getTime() - 45 * 86_400_000
+  // A: used this month. B: only used long ago, so it is outside the window.
   ctx.emit('session/event', sessionStub({ id: 's-now' }), messageEvent({ time: Date.now(), usage: usage({ input: 1_000_000 }) }))
   ctx.emit(
     'session/event',
     sessionStub({ id: 's-old' }),
-    messageEvent({ time: lastMonth, model: 'claude-haiku-5-5', usage: usage({ input: 2_000_000 }) }),
+    messageEvent({ time: longAgo, model: 'claude-haiku-5-5', usage: usage({ input: 2_000_000 }) }),
   )
 
   const summaryRoute = webServer.routes.find((entry) => entry.path === SUMMARY_ROUTE)

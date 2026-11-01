@@ -118,8 +118,10 @@ function summaryData() {
     allowances: {
       fiveHour: { cost: 0.003, share: 0.00003, cap: 0.2 },
       weekly: { cost: 0.21, share: 0.0021, cap: 0.5 },
+      month: { cost: 1.2, share: 0.012, cap: 1 },
     },
-    note: '本机口径 · 仅 opencode-go · 本自然月',
+    last7: { cost: 0.42, calls: 37, tokens: 1_000_000 },
+    note: '本机口径 · 仅 opencode-go · 近 30 天',
   }
 }
 
@@ -351,7 +353,7 @@ test('every model row renders `$cost / share` and tags models without a quota', 
   assert.match(html, /dts-bar-fill is-muted/)
 })
 
-test('the panel footnote carries the note and the 5h/weekly allowances', () => {
+test('the panel footnote carries the note, the week cap and the month share', () => {
   const { exports } = materialize()
   const html = render(
     React.createElement(exports.PanelBody, {
@@ -360,8 +362,8 @@ test('the panel footnote carries the note and the 5h/weekly allowances', () => {
       refreshing: false,
     }),
   )
-  assert.match(html, /本机口径 · 仅 opencode-go · 本自然月/)
-  assert.match(html, /5h &lt;0\.01%\/20% · 周 0\.21%\/50%/)
+  assert.match(html, /本机口径 · 仅 opencode-go/)
+  assert.match(html, /5h &lt;0\.01%\/20% · week 0\.21%\/50% · month 1\.2%/)
 })
 
 test('the panel header offers refresh and the `⋯` detail button', () => {

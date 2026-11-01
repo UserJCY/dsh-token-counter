@@ -12,7 +12,7 @@ Version **0.3.0** · 2026-11-01 · MIT
 2. **Live + backfill** — folds each `assistant/message.usage` from `session/event`, and scans the persisted session logs on disk once at startup. Idempotent across restarts.
 3. **Priced with the Go table** — `lib/pricing.js` carries 30 Go models in USD per 1M tokens (2 of them free-tier), and applies DeepSeek V4.1 Flash / V4 Pro peak and off-peak rates by timestamp.
 4. **Allowance percentages** — each model row reads "cost / share of its allowance" (`$0.446 / 0.45%`); the panel's headline amount carries the **total percentage**, computed as the shared-pool sum `Σ(cost / limit)`.
-5. **Sidebar panel** — a cost chip in the sidebar footer (current calendar month) opens "month cost / per model / rolling-window footnote", fed by the read-only host route `GET /token-split/summary`.
+5. **Sidebar panel** — a cost chip in the sidebar footer (rolling last 30 days) opens "30-day cost / last-7-days line / per model / allowance footnote", fed by the read-only host route `GET /token-split/summary`.
 6. **Detailed-usage dialog** — opened from the panel's `⋯`; one block for the total plus one block per model, each with its **own** `day / month / session` mode and its own time navigation, drawn with hand-written SVG.
 7. **Tool + export** — the `token_usage` tool renders a Markdown report; `save: true` also writes `.md` and a per-step `.csv`.
 
@@ -63,7 +63,7 @@ dsh plugin --profile desktop remove dsh-token-split
 | `providers` | `['opencode-go']` | **the only provider routes counted**; an empty array disables the filter. |
 | `plan` | `go` | `go` / `plus` / `teams`, copy only. |
 | `monthlyFee` | `10` | subscription price per cycle, USD. |
-| `cycleStartDay` | `1` | cycle restart day (1–28). Only affects `period: 'cycle'`; the panel always shows the **calendar month**. |
+| `cycleStartDay` | `1` | cycle restart day (1–28). Only affects `period: 'cycle'`; the panel always shows the **rolling last 30 days**. |
 | `fxRate` | `0` | USD→CNY rate; when > 0 the report and panel add a CNY reference. |
 | `pricingFile` | `''` | extra price-override file; empty reads `pricing.json` in the data directory. |
 | `includeSubagents` | `true` | count delegation sessions (their spend rolls up into the root session; session counts are per root). |
@@ -72,32 +72,34 @@ dsh plugin --profile desktop remove dsh-token-split
 
 ## The panel
 
-A chip in the sidebar footer (`sidebar.footer.action`, order 5) shows the **current calendar month** cost. Opened:
+A chip in the sidebar footer (`sidebar.footer.action`, order 5) shows the **rolling last 30 days** cost. Opened:
 
 ```
 ┌──────────────────────────────────┐
-│ 2026-11-01 ~ 2026-11-30 · alice  ⟳ ⋯│
+│ 2026-10-03 ~ 2026-11-01 · alice  ⟳ ⋯│
 │ $0.446                      0.45% │
 │ 37,294,551 tokens · 189 calls · 3 sessions │
+│ last 7 days $0.132 · 41 calls     │
 │                                  │
 │ By model                         │
 │ DeepSeek V4.1 Flash  $0.446 / 0.45%│
 │ ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁          │
 │                                  │
-│ this machine · opencode-go only · calendar month │
-│ 5h 0.02%/20% · week 0.09%/50%     │
+│ this machine · opencode-go only · last 30 days │
+│ 5h 0.02%/20% · week 0.09%/50% · month 0.05% │
 │ 4 more models did not run this month │
 └──────────────────────────────────┘
 ```
 
-- The headline is this month's cost; the number beside it is the **total percentage** (`Σ(cost/limit)`, shared-pool basis). If any paid model has no allowance data the total reads `—`, because that sum would be a lie.
-- Each model row is "cost / share of that model's allowance", with a thin bar for its share of this month's spend beneath. Unpriced models are muted and flagged; free-tier models read `/ free`.
-- The footnote is `5h x%/20% · week y%/50%`: the rolling 5-hour and rolling 7-day spend expressed as a share of the monthly allowance, plus each window's cap (20% / 50%). These are Go's own two-window limits, shown for reference.
+- The headline is the **last 30 days** cost; the number beside it is that window's **total percentage** (`Σ(cost/limit)`, shared-pool basis). If any paid model has no allowance data the total reads `—`, because that sum would be a lie.
+- The second line is the **last 7 days** cost and call count.
+- Each model row is "cost / share of that model's allowance", with a thin bar for its share of the window's spend beneath. Unpriced models are muted and flagged; free-tier models read `/ free`.
+- The footnote is `5h x%/20% · week y%/50% · month z%`: the rolling 5-hour and rolling 7-day spend as a share of the monthly allowance (with each window's cap, 20% / 50%), then the **calendar month's** share. Go's own two-window limits plus the monthly allowance, shown for reference.
 - The line under it counts models that did **not** run this month (`summary.unusedCount`).
 - It refreshes every 60 s while open, or immediately via `⟳`. Closed, it fetches nothing.
 - `⋯` in the header opens the **detailed usage** dialog.
 
-> The panel window is the **calendar month** (`period: 'month'`), so it resets on the 1st. For a billing cycle, use the tool with `period: 'cycle'` (start day = `cycleStartDay`).
+> The panel window is the **rolling last 30 days** (`period: 'last30'`), so it does not reset on the 1st. The allowance percentages ignore the window: `week` is always the trailing seven days and `month` always the live calendar month. For a billing cycle, use the tool with `period: 'cycle'` (start day = `cycleStartDay`).
 
 ## The detailed-usage dialog
 

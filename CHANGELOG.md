@@ -2,6 +2,23 @@
 
 All notable changes to `dsh-token-split`. Dates are local build dates.
 
+## 0.3.1 — 2026-11-01
+
+The window and the allowance are now decoupled: the panel rolls, the percentages
+do not.
+
+- **Default window is the rolling 30 days again** (`DEFAULT_PERIOD` = `last30`),
+  so the panel no longer resets on the 1st. `month` and `cycle` stay available
+  through the tool.
+- **Last-7-days line under the headline**: `近 7 天 $0.132 · 41 次`, from a new
+  `last7` block in the summary payload.
+- **The allowance footnote gains the monthly share and English labels**:
+  `5h 0.02%/20% · week 0.09%/50% · month 0.05%`. `week` is the trailing seven
+  days (cap 50%), `month` is the live calendar month's plan-level `Σ(cost/limit)`
+  (no cap — it is the whole allowance). Both are aggregated independently of the
+  panel window, so a rolling window can never mix two billing months into them.
+- The panel note now reads `近 30 天` instead of `本自然月`.
+
 ## 0.3.0 — 2026-11-01
 
 The "how much of the plan is left" release: money is still the unit, but every
