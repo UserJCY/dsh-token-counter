@@ -451,6 +451,17 @@ test('the dialog centres itself with the SPEC §5.3 geometry and no month in its
   assert.equal(occurrences(html, /aria-pressed="true">日</g), 2)
   assert.match(html, /dts-date-nav/)
   assert.match(html, /2026-11-01/)
+  // Console-style header: three KPI cards, a model picker and an export button.
+  assert.match(html, /dts-kpi-row/)
+  assert.match(html, /消费金额/)
+  assert.match(html, /API 请求次数/)
+  assert.match(html, />Tokens</)
+  assert.match(html, /全部模型/)
+  assert.match(html, /dts-export[^>]*>导出</)
+  // The model blocks draw the requests/tokens pair, the total a cost card.
+  assert.equal(occurrences(html, /dts-chart-title">API 请求次数</g), 1)
+  assert.equal(occurrences(html, /dts-chart-title">Tokens</g), 1)
+  assert.equal(occurrences(html, /dts-chart-title">消费金额</g), 1)
 })
 
 test('two blocks can show different months at the same time', async () => {
@@ -599,16 +610,18 @@ test('the three modes render 24 dots, one dot per day, and one bar per session',
     limits: LIMITS,
   }
 
+  // A model block draws two charts (requests and tokens), so every bucket in
+  // the series appears twice.
   const day = render(React.createElement(exports.UsageBlock, { ...blockProps, mode: 'day' }))
-  assert.equal(occurrences(day, /class="dts-dot"/g), 24)
+  assert.equal(occurrences(day, /class="dts-dot"/g), 48)
 
   const month = render(React.createElement(exports.UsageBlock, { ...blockProps, mode: 'month' }))
-  assert.equal(occurrences(month, /class="dts-dot"/g), 30)
+  assert.equal(occurrences(month, /class="dts-dot"/g), 60)
 
   const session = render(React.createElement(exports.UsageBlock, { ...blockProps, mode: 'session' }))
-  assert.equal(occurrences(session, /class="dts-session-bar"/g), 3)
+  assert.equal(occurrences(session, /class="dts-session-bar"/g), 6)
   // 28px bars, 12px gaps, and never stretched across the dialog.
-  assert.equal(occurrences(session, /width="28"/g), 3)
+  assert.equal(occurrences(session, /width="28"/g), 6)
   assert.match(session, /width="400"/)
 })
 

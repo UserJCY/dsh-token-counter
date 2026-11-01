@@ -1,6 +1,6 @@
 {
   "name": "dsh-token-split",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "type": "module",
   "description": "Per-machine OpenCode Go token accounting with Go pricing, allowance percentages, a sidebar panel and a detailed usage dialog for DSH",
   "repository": {

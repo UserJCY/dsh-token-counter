@@ -2,6 +2,23 @@
 
 All notable changes to `dsh-token-split`. Dates are local build dates.
 
+## 0.3.3 — 2026-11-01
+
+The detailed-usage dialog now follows the console's layout.
+
+- **Toolbar** — a model picker (`全部模型` / one model) and an `导出` button that
+  downloads the loaded month as CSV (`date, cost_usd, calls, tokens`). The picker
+  only narrows what is drawn; each block still owns its request.
+- **Three KPI cards** — `消费金额`, `API 请求次数`, `Tokens`, over the dialog's base
+  month.
+- **Chart cards** — the total block draws one wide `消费金额` card; every model
+  block draws the console's pair, `API 请求次数` and `Tokens`, side by side. The
+  date stepper and the `日 | 月 | 会话` switch moved into a footer row under the
+  charts, one set per block, so each chart keeps its own range as before.
+- The chart engine gained a measure dimension: points are re-pointed at
+  `calls` / `tokens` and a formatter prints the axis and the tooltip as plain
+  grouped integers instead of dollars.
+
 ## 0.3.2 — 2026-11-01
 
 - **The panel now actually asks for the rolling window.** The client had
