@@ -2,6 +2,15 @@
 
 All notable changes to `dsh-token-split`. Dates are local build dates.
 
+## 0.3.2 — 2026-11-01
+
+- **The panel now actually asks for the rolling window.** The client had
+  `period: 'month'` hard-coded in its summary request, so the 0.3.1 host-side
+  default never reached it and the header kept reading `2026-11-01 ~ 2026-11-30`.
+  It requests `last30` now. The allowance footnote is unaffected: `week` stays
+  the trailing seven days and `month` the live calendar month, both aggregated
+  host-side from their own windows.
+
 ## 0.3.1 — 2026-11-01
 
 The window and the allowance are now decoupled: the panel rolls, the percentages
