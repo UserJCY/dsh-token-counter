@@ -17,7 +17,7 @@ function sample(overrides = {}) {
     at: 1_700_000_000_000,
     provider: 'opencode-go',
     model: 'deepseek-v4.1-flash',
-    user: 'jerry',
+    user: 'alice',
     final: true,
     input: 100,
     output: 20,

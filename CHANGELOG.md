@@ -1,0 +1,56 @@
+# Changelog
+
+All notable changes to `dsh-token-split`. Dates are local build dates.
+
+## 0.3.0 — 2026-11-01
+
+The "how much of the plan is left" release: money is still the unit, but every
+amount now carries its share of the Go allowance, and there is a page to look
+at the history.
+
+- **Allowance percentages in the panel.** Every model row reads
+  `$0.446 / 0.45%` (`cost / that model's monthly allowance`); the headline
+  amount carries the plan-level total, computed as the shared-pool sum
+  `Σ(cost / limit)` rather than `totalCost / Σlimit`. The total is hidden when
+  any paid model lacks allowance data, because that sum would be misleading.
+- **Default window is the calendar month.** `DEFAULT_PERIOD` moved from the
+  rolling 30 days to `month`, so the percentages always describe the live
+  billed month instead of mixing two of them. `last30` is still available.
+- **Rolling-window footnote.** The panel now ends with
+  `5h 0.02%/20% · 周 0.09%/50%`: the last five hours and the last seven days
+  as a share of the monthly allowance, with each window's cap (20% / 50%).
+- **Detailed-usage dialog** (`⋯` in the panel header). One block for the total
+  plus one block per model; every block owns its `日 / 月 / 会话` mode and its
+  own cursor, so `日` steps day by day across months and `月` / `会话` step
+  month by month. Charts are hand-written SVG: `niceScale` Y ticks, hover
+  tooltips, and a 100 ms transition between selections (point resampling for
+  lines, height scaling for bars). A loading month keeps the previous chart.
+- **New `GET /token-split/timeline` route** (also under `/api/`), read-only and
+  loopback-only like the summary. One request answers the whole dialog: the
+  month's day series, the selected day's 24 hours, the month's per-session bars
+  — for the total and for every model — plus `knownModels`, the all-history
+  model list carrying `lastMonthKey` / `lastMonthCost`.
+- **"Unused this month (N)" group.** Models present in history but absent from
+  the current month collapse into one group; expanded, each opens on the month
+  it last ran and is labelled with it.
+- **Stale-while-revalidate on the client.** Opening the dialog paints the cached
+  payload (no skeleton) while a forced refresh runs; while it stays open, every
+  visible selection revalidates every 30 s. Identical selections share one
+  in-flight request and a small LRU cache.
+- **Sub-session spend rolls up into its root session**, and a sub-session never
+  adds to the session count: one resolver serves the panel, the timeline and the
+  report, so the three cannot disagree.
+- **`summary` gains `unusedCount`** so the panel can footnote models that did
+  not run this month.
+
+## 0.2.7 — baseline before 0.3.0
+
+- Sidebar chip and panel over a rolling **last 30 days**, per-model split with
+  share bars, 60 s refresh.
+- `GET /token-split/summary` (and `/api/token-split/summary`), read-only and
+  loopback-only.
+- `token_usage` tool with `period` / `detail` / `otherCost` / `monthlyFee` /
+  `basis` / `save`, Markdown report and per-step CSV.
+- Go rate card for 30 models, DeepSeek V4.1 Flash and V4 Pro peak/off-peak,
+  per-model monthly allowances, `pricing.json` overrides with hot reload.
+- Session-event folding, idempotent history backfill, atomic ledger.

@@ -1,0 +1,12 @@
+# Normalise line endings so a checkout on any OS produces the same files.
+* text=auto eol=lf
+
+# Binaries must never be normalised.
+*.png binary
+*.jpg binary
+*.webp binary
+*.zip binary
+*.tgz binary
+
+# Generated bundles are still text, but keep diffs honest.
+lib/client.js text eol=lf

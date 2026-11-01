@@ -10,7 +10,7 @@
 #
 #   - id: token-split
 #     config:
-#       user: jerry
+#       user: alice
 #       monthlyFee: 10
 #       cycleStartDay: 15
 #       providers: [opencode-go]

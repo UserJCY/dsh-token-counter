@@ -1,6 +1,26 @@
+# dependencies
 node_modules/
+
+# release artifacts
+dist/
+*.tgz
+*.zip
+
+# scratch directories created by test/helpers.mjs
 test/.tmp/
 test/.tmp-*/
 test/.home-*/
 test/.ws-*/
+
+# logs
 *.log
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+
+# local-only setup (never commit a key or a local module root)
+.dsh-test-deps/
+.env
+.env.*
+*.local

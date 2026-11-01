@@ -1,13 +1,16 @@
 {
   "name": "dsh-token-split",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "type": "module",
-  "description": "Per-machine OpenCode Go token accounting with Go pricing and a sidebar usage panel for DSH",
+  "description": "Per-machine OpenCode Go token accounting with Go pricing, allowance percentages, a sidebar panel and a detailed usage dialog for DSH",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/UserJCY/dsh-token-counter.git"
   },
   "homepage": "https://github.com/UserJCY/dsh-token-counter#readme",
+  "bugs": {
+    "url": "https://github.com/UserJCY/dsh-token-counter/issues"
+  },
   "keywords": [
     "dsh",
     "dsh-plugin",
@@ -40,10 +43,15 @@
     "lib",
     "cordis.patch.yml",
     "README.md",
-    "README.zh.md"
+    "README.zh.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "test": "node --import ./test/register.mjs test/run.mjs"
+  },
+  "devDependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   },
   "license": "MIT"
 }

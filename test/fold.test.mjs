@@ -48,7 +48,7 @@ test('shouldReplace keeps a finalized sample and lets a later observation win ot
 test('foldSessionEvents lets the finalized message replace an earlier usage chunk', () => {
   const result = foldSessionEvents({
     sessionId: 's1',
-    user: 'jerry',
+    user: 'alice',
     events: [
       contextEvent(),
       chunkEvent({ usage: usage({ input: 500, output: 10 }) }),
@@ -59,13 +59,13 @@ test('foldSessionEvents lets the finalized message replace an earlier usage chun
   assert.equal(result.records[0].final, true)
   assert.equal(result.records[0].input, 100)
   assert.equal(result.records[0].cacheRead, 40)
-  assert.equal(result.records[0].user, 'jerry')
+  assert.equal(result.records[0].user, 'alice')
 })
 
 test('foldSessionEvents keeps the last of several usage chunks when no message follows', () => {
   const result = foldSessionEvents({
     sessionId: 's1',
-    user: 'jerry',
+    user: 'alice',
     events: [chunkEvent({ usage: usage({ input: 100 }) }), chunkEvent({ usage: usage({ input: 400, output: 50 }) })],
   })
   assert.equal(result.records.length, 1)
@@ -76,7 +76,7 @@ test('foldSessionEvents keeps the last of several usage chunks when no message f
 test('foldSessionEvents never lets a late chunk overwrite a finalized step', () => {
   const result = foldSessionEvents({
     sessionId: 's1',
-    user: 'jerry',
+    user: 'alice',
     events: [messageEvent({ usage: usage({ input: 100 }) }), chunkEvent({ usage: usage({ input: 999 }) })],
   })
   assert.equal(result.records[0].input, 100)
@@ -85,7 +85,7 @@ test('foldSessionEvents never lets a late chunk overwrite a finalized step', () 
 test('foldSessionEvents bills each turn and step once', () => {
   const result = foldSessionEvents({
     sessionId: 's1',
-    user: 'jerry',
+    user: 'alice',
     events: [
       messageEvent({ turn: 1, step: 1 }),
       messageEvent({ turn: 1, step: 2 }),
@@ -98,8 +98,8 @@ test('foldSessionEvents bills each turn and step once', () => {
 
 test('foldSessionEvents drops a delegation session when subagents are excluded', () => {
   const events = [messageEvent()]
-  const included = foldSessionEvents({ sessionId: 's1', user: 'jerry', events, delegationDepth: 1, includeSubagents: true })
-  const excluded = foldSessionEvents({ sessionId: 's1', user: 'jerry', events, delegationDepth: 1, includeSubagents: false })
+  const included = foldSessionEvents({ sessionId: 's1', user: 'alice', events, delegationDepth: 1, includeSubagents: true })
+  const excluded = foldSessionEvents({ sessionId: 's1', user: 'alice', events, delegationDepth: 1, includeSubagents: false })
   assert.equal(included.records.length, 1)
   assert.equal(excluded.records.length, 0)
 })
@@ -107,7 +107,7 @@ test('foldSessionEvents drops a delegation session when subagents are excluded',
 test('foldSessionEvents reports the title and the event time span', () => {
   const result = foldSessionEvents({
     sessionId: 's1',
-    user: 'jerry',
+    user: 'alice',
     events: [contextEvent({ time: 1000 }), titleEvent('重构账单', 2000), messageEvent({ time: 3000 })],
   })
   assert.equal(result.title, '重构账单')
