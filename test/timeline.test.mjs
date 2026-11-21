@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { buildTimeline, createSessionResolver, monthBounds, parseMonthKey } from '../lib/timeline.js'
+import { buildRange, buildTimeline, createSessionResolver, monthBounds, parseMonthKey } from '../lib/timeline.js'
 import { MODEL_PRICING, PriceTable } from '../lib/pricing.js'
 import { aggregate } from '../lib/report.js'
 import { usageKey } from '../lib/fold.js'
@@ -417,4 +417,30 @@ test('knownModels filters providers, keeps free models and totals match the full
   // Sorted by total cost, descending.
   const costs = body.knownModels.map((row) => row.totalCost)
   assert.deepEqual(costs, [...costs].sort((a, b) => b - a))
+})
+
+test('buildRange reports the peak and off-peak halves of a rolling window', () => {
+  const priceTable = new PriceTable()
+  const peakAt = Date.UTC(2026, 10, 2, 2, 0) // Monday, inside the peak window
+  const offAt = Date.UTC(2026, 10, 2, 12, 0) // Monday, off-peak
+  const records = [
+    sample({ at: peakAt, input: 1_000_000, output: 1_000_000, sessionId: 's1' }),
+    sample({ at: offAt, input: 1_000_000, output: 1_000_000, sessionId: 's2' }),
+  ]
+  const body = buildRange({
+    records,
+    priceTable,
+    providers: ['opencode-go'],
+    range: 'last7',
+    now: Date.UTC(2026, 10, 3, 12, 0),
+  })
+  assert.equal(body.total.calls, 2)
+  assert.equal(Number(body.total.cost.toFixed(4)), 2.25)
+  assert.equal(body.total.peak.calls, 1)
+  assert.equal(Number(body.total.peak.cost.toFixed(4)), 1.5)
+  assert.equal(body.total.offPeak.calls, 1)
+  assert.equal(Number(body.total.offPeak.cost.toFixed(4)), 0.75)
+  // The per-model row carries the same split.
+  assert.equal(body.models[0].peak.calls, 1)
+  assert.equal(Number(body.models[0].offPeak.cost.toFixed(4)), 0.75)
 })

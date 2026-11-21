@@ -453,3 +453,24 @@ test('aggregate survives a cyclic parent chain', () => {
 })
 
 
+
+test('aggregate splits peak and off-peak spend and applies the 2x factor', () => {
+  const priceTable = new PriceTable()
+  // 2026-11-02 is a Monday: 02:00 UTC is inside the peak window, 12:00 is not.
+  const peakAt = Date.UTC(2026, 10, 2, 2, 0)
+  const offAt = Date.UTC(2026, 10, 2, 12, 0)
+  const records = [
+    sample({ at: peakAt, input: 1_000_000, output: 1_000_000, sessionId: 's1' }),
+    sample({ at: offAt, input: 1_000_000, output: 1_000_000, sessionId: 's2' }),
+  ]
+  const result = aggregate(records, { start: peakAt - 1, end: offAt + 1, priceTable, providers: ['opencode-go'] })
+  assert.equal(result.totals.calls, 2)
+  assert.equal(Number(result.totals.cost.toFixed(4)), 2.25)
+  // $1.50 peak (2x) + $0.75 off-peak, and the two halves add up to the total.
+  assert.equal(result.totals.peak.calls, 1)
+  assert.equal(Number(result.totals.peak.cost.toFixed(4)), 1.5)
+  assert.equal(result.totals.offPeak.calls, 1)
+  assert.equal(Number(result.totals.offPeak.cost.toFixed(4)), 0.75)
+  assert.equal(result.totals.peak.tokens, 2_000_000)
+  assert.equal(result.totals.offPeak.tokens, 2_000_000)
+})

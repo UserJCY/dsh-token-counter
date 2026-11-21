@@ -2,6 +2,19 @@
 
 All notable changes to `dsh-token-split`. Dates are local build dates.
 
+## 0.4.2 — 2026-11-21
+
+- **Peak and off-peak are now visible, not just priced.** DeepSeek V4.1 Flash and
+  V4 Pro charge a 2× factor inside the weekday UTC `01:00–04:00` / `06:00–10:00`
+  windows (the `multipliers` field of the Go model catalog). The ledger always
+  applied it, but a single blended number made it look like there was no
+  distinction. `aggregate()` and `buildRange()` now carry
+  `peak` / `offPeak` `{ calls, tokens, cost }` per total and per model, and the
+  panel, the dialog and the Markdown report print
+  `峰时 462 次 $2.913 · 谷时 5,811 次 $14.937`.
+- The multiplier itself is unchanged: `isPeak()` still reads UTC hours and
+  weekdays, and the price table's `peak` rows are exactly 2× the base rows.
+
 ## 0.4.1 — 2026-11-01
 
 - **Token axes use compact units.** The `Tokens` chart reads `200M` / `30M` / `1.4B`

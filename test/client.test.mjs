@@ -213,7 +213,17 @@ function rangeData() {
   return {
     ok: true,
     range: { key: 'last30', label: '近 30 天', start: 0, end: 1, hourly: false },
-    total: { cost: 0.467, calls: 374, tokens: 26_484_419, sessions: 28, share: 0.0059, limitKnown: true, points },
+    total: {
+      cost: 0.467,
+      calls: 374,
+      tokens: 26_484_419,
+      sessions: 28,
+      share: 0.0059,
+      limitKnown: true,
+      peak: { calls: 12, cost: 0.21 },
+      offPeak: { calls: 362, cost: 0.257 },
+      points,
+    },
     models: [
       {
         key: 'opencode-go/deepseek-v4.1-flash',
@@ -499,6 +509,8 @@ test('the dialog centres itself with the SPEC §5.3 geometry and no month in its
   // Token axes read in compact units (`30M`), never `30,000,000`.
   assert.match(html, />\d+(\.\d)?M</)
   assert.doesNotMatch(html, /dts-axis-y[^>]*>\d{1,3},\d{3},\d{3}</)
+  // The peak/off-peak split is stated instead of blended into one number.
+  assert.match(html, /峰时 12 次 \$0\.210 · 谷时 362 次 \$0\.257/)
 })
 
 test('two blocks can show different months at the same time', async () => {
