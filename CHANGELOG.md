@@ -2,6 +2,19 @@
 
 All notable changes to `dsh-token-split`. Dates are local build dates.
 
+## 0.4.3 — 2026-11-22
+
+- **GLM-5.3's Go allowance is `$500`, not `$15`.** The console raised it (the
+  "higher usage limits through Nov 22" promo), so the model's share of the plan
+  read ~33× too high. `monthlyLimit` is 500 now; a $0.016 spend reads `<0.01%`
+  instead of `0.11%`.
+- **Four catalog models added** so they never price as "未定价": `hy4`
+  ($0.834 / $2.501, $60), `qwen4-max` ($1.5 / $4.5, $15), and the free tiers
+  `longcat-2.5-free` and `hy4-flash-free`.
+- The table now matches the live `https://opencode.ai/inference/go/v1/models`
+  catalog row for row (34 rows; `glm-5.2`, `mimo-v2.5`, `mimo-v2.5-pro` are kept
+  for historical ledger records even though they left the catalog).
+
 ## 0.4.2 — 2026-11-21
 
 - **Peak and off-peak are now visible, not just priced.** DeepSeek V4.1 Flash and

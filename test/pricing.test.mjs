@@ -16,7 +16,11 @@ test('the built-in table covers the documented Go models', () => {
   assert.ok(ids.includes('deepseek-v4-pro'))
   assert.ok(ids.includes('kimi-k3.1-pro'))
   assert.ok(ids.includes('gemini-4-argon'))
-  assert.equal(ids.length, 30)
+  assert.ok(ids.includes('qwen4-max'))
+  assert.ok(ids.includes('hy4'))
+  // Historical rows stay in the table for old ledger records, so the count
+  // tracks the catalog plus those.
+  assert.equal(ids.length, 34)
   assert.equal(PLANS.go, 10)
   assert.equal(PLANS.plus, 40)
 })
