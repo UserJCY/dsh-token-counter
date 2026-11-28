@@ -123,3 +123,17 @@ test('loadPriceTable survives a broken override file', () => {
   assert.equal(warnings.length, 1)
   fs.rmSync(dir, { recursive: true, force: true })
 })
+
+test('a promotional discount scales the list price and keeps the limit', () => {
+  const table = new PriceTable()
+  // Monday 12:00 UTC: off-peak everywhere, so the base row applies.
+  const at = Date.UTC(2026, 10, 2, 12, 0)
+  const priced = table.price({ model: 'glm-5.3', at, input: 1_000_000, output: 0, cacheRead: 0, cacheWrite: 0 })
+  // $1.40 list x 0.4 = $0.56 with the console's 60% off promo.
+  assert.equal(Number(priced.usd.toFixed(4)), 0.56)
+  assert.equal(priced.discount, 0.6)
+  assert.equal(table.discountOf('glm-5.3'), 0.6)
+  assert.equal(table.limitOf('glm-5.3'), 200)
+  // Undiscounted models stay at zero discount.
+  assert.equal(table.discountOf('deepseek-v4.1-flash'), 0)
+})

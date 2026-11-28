@@ -2,6 +2,17 @@
 
 All notable changes to `dsh-token-split`. Dates are local build dates.
 
+## 0.4.4 — 2026-11-28
+
+- **GLM-5.3: `$200` allowance and a `60% off` promo.** The console cut the list
+  price to **$0.56 / $1.76 / $0.104** per 1M (input / output / cache read) and
+  raised the Go allowance from `$500` to `$200`. The row keeps the list price and
+  carries `discount: 0.6`, so the effective price is exactly the console's and
+  the promo is one field to flip when it ends.
+- `price()` now applies the discount on top of any peak row, `PriceTable`
+  exposes `discountOf()`, and the model rows in the payload carry `discount` so
+  the panel and the dialog tag the model with `60% off` like the console does.
+
 ## 0.4.3 — 2026-11-22
 
 - **GLM-5.3's Go allowance is `$500`, not `$15`.** The console raised it (the
